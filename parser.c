@@ -71,7 +71,10 @@ void parse_file ( char * filename,
 
   FILE *f;
   char line[256];
+  char** args;
+  color c;
   
+  c.red = MAX_COLOR;
   clear_screen(s);
 
   if ( strcmp(filename, "stdin") == 0 ) 
@@ -82,7 +85,142 @@ void parse_file ( char * filename,
   while ( fgets(line, 255, f) != NULL ) {
     line[strlen(line)-1]='\0';
     printf(":%s:\n",line);  
+
+    if (strcmp(line, "quit")){
+      exit(0);
+    }
+    else if (strcmp(line, "line")){
+      fgets(line, 255, f);
+      line[strlen(line)-1]='\0';
+      args = parse_line(line, ' ');
+      add_edge(pm, args[0], args[1], args[2], args[3], args[4], args[5]);
+    }
+    else if (strcmp(line, "circle")){
+
+    }
+    else if (strcmp(line, "hermite")){
+
+    }
+    else if (strcmp(line, "bezier")){
+
+    }
+    else if (strcmp(line, "ident")){
+
+    }
+    else if (strcmp(line, "scale")){
+
+    }
+    else if (strcmp(line, "translate")){
+
+    }
+    else if (strcmp(line, "xrotate")){
+
+    }
+    else if (strcmp(line, "yrotate")){
+
+    }
+    else if (strcmp(line, "zrotate")){
+    
+    }
+    else if (strcmp(line, "apply")){
+      natrix_mult(transform, pm);
+    }
+    else if (strcmp(line, "display")){
+      draw_lines(pm, s, c);
+      display(s);
+    }
+    else if (strcmp(line, "save")){
+      draw_lines(pm, s, c);
+      fgets(line, 255, f);
+      line[strlen(line)-1]='\0';
+      save_extension(s, line);
+    }  
   }
 }
 
   
+/*------------------------------ count_tokens ------------------------------*/
+
+/*
+  Counts the number of tokens in a string
+  Params:
+  char *line - input string
+  char dlimit - delimiter
+  Returns:
+  number of tokens
+*/
+
+int count_tokens( char *line, char dlimit ){
+  char *token = line;
+  int n = 0;
+  while( token ){
+    token = strchr(token, dlimit);
+    if( token ){
+      token++;
+      while (*token == dlimit)
+	token++;
+    }
+    n++;
+  }
+  return n;
+}
+
+/*------------------------------ parse_line ------------------------------*/
+
+/*
+  Separates the tokens in a string and returns an array of tokens
+  Params:
+  char *line - input string
+  char dlimit - delimiter
+  Returns:
+  array of tokens
+*/
+
+char** parse_line( char *line, char dlimit ){
+  int size = count_tokens(line,dlimit);
+  int i = 0;
+  char** tokens = (char**)malloc(sizeof(char*)*size+1);
+  char sdlimit[2] = {dlimit, '\0'};
+  char* tmp;
+	
+  while (i < size){
+    tmp = strsep(&line, sdlimit);
+    if (*tmp){
+      tmp = trim(tmp);
+      tokens[i] = tmp;
+      i++;
+    }
+  }
+  tokens[size] = NULL;
+  return tokens;
+}
+
+/*------------------------------ trim ------------------------------*/
+
+/*
+  trims leading and trailing whitespace
+  Params:
+  char *line - input string
+  Returns:
+  pointer to the beginning of the trimmed string
+*/
+
+char* trim( char *line ){
+  int i = 0;
+  int len;
+  while( *(line+i) == ' '){
+    i++;
+  }
+  line = line+i;
+  len = strlen(line);
+  i = len-1;
+  while( line[i] == ' ' || line[i] == '\n' ){
+    i--;
+  }
+  if (i < len - 1 &&
+      (line[i+1] == ' ' ||
+       line[i+1] == '\n'))
+    line[i+1] = '\0';
+  return line;
+}
+
