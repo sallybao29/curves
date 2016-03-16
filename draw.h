@@ -16,14 +16,15 @@ void draw_lines( struct matrix * points, screen s, color c);
 //advanced shapes
 double circle_x(double cx, double r, double t);
 double circle_y(double cy, double r, double t);
+double curve(double a, double b, double c, double d, double t);
 
 void add_circle( struct matrix * points, 
-		 double cx, double cy, 
-		 double r, double step );
+								 double cx, double cy, 
+								 double r, double step );
 void add_curve( struct matrix *points, 
-		double x0, double y0,
-		double x1, double y1,
-		double x2, double y2,
-		double x3, double y3,
-		double step, int type );
+								double x0, double y0,
+								double x1, double y1,
+								double x2, double y2,
+								double x3, double y3,
+								double step, int type );
 #endif
