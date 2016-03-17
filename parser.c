@@ -71,10 +71,10 @@ void parse_file ( char * filename,
 
   FILE *f;
   char line[256];
-  char** args;
   color c;
+	double a1, a2, a3, a4, a5, a6, a7, a8;
   
-  c.red = MAX_COLOR;
+	c.red = MAX_COLOR;
   clear_screen(s);
 
   if ( strcmp(filename, "stdin") == 0 ) 
@@ -86,141 +86,89 @@ void parse_file ( char * filename,
     line[strlen(line)-1]='\0';
     printf(":%s:\n",line);  
 
-    if (strcmp(line, "quit")){
+    if (strcmp(line, "quit") == 0){
       exit(0);
     }
-    else if (strcmp(line, "line")){
+    else if (strcmp(line, "line") == 0){
       fgets(line, 255, f);
-      line[strlen(line)-1]='\0';
-      args = parse_line(line, ' ');
-      add_edge(pm, args[0], args[1], args[2], args[3], args[4], args[5]);
-    }
-    else if (strcmp(line, "circle")){
-
-    }
-    else if (strcmp(line, "hermite")){
-
-    }
-    else if (strcmp(line, "bezier")){
-
-    }
-    else if (strcmp(line, "ident")){
-
-    }
-    else if (strcmp(line, "scale")){
-
-    }
-    else if (strcmp(line, "translate")){
-
-    }
-    else if (strcmp(line, "xrotate")){
-
-    }
-    else if (strcmp(line, "yrotate")){
-
-    }
-    else if (strcmp(line, "zrotate")){
-    
-    }
-    else if (strcmp(line, "apply")){
-      natrix_mult(transform, pm);
-    }
-    else if (strcmp(line, "display")){
-      draw_lines(pm, s, c);
-      display(s);
-    }
-    else if (strcmp(line, "save")){
-      draw_lines(pm, s, c);
-      fgets(line, 255, f);
-      line[strlen(line)-1]='\0';
-      save_extension(s, line);
-    }  
-  }
+      line[strlen(line)]='\0';
+			sscanf(line, "%lf" "%lf" "%lf" "%lf" "%lf" "%lf",
+						 &a1, &a2, &a3, &a4, &a5, &a6);
+			add_edge(pm, a1, a2, a3, a4, a5, a6);
+		}
+		else if (strcmp(line, "circle") == 0){
+			fgets(line, 255, f);
+      line[strlen(line)]='\0';
+			sscanf(line, "%lf" "%lf" "%lf", &a1, &a2, &a3);
+			add_circle(pm, a1, a2, a3, 0.01);
+		}
+		else if (strcmp(line, "hermite") == 0){
+			fgets(line, 255, f);
+      line[strlen(line)]='\0';
+			sscanf(line, "%lf" "%lf" "%lf" "%lf" "%lf" "%lf" "%lf" "%lf",
+						 &a1, &a2, &a3, &a4, &a5, &a6, &a7, &a8);
+			add_curve(pm, a1, a2, a5, a6, a3, a4, a7, a8, 0.01, HERMITE_MODE);
+		}
+		else if (strcmp(line, "bezier") == 0){
+			fgets(line, 255, f);
+      line[strlen(line)]='\0';
+			sscanf(line, "%lf" "%lf" "%lf" "%lf" "%lf" "%lf" "%lf" "%lf",
+						 &a1, &a2, &a3, &a4, &a5, &a6, &a7, &a8);
+			add_curve(pm, a1, a2, a3, a4, a5, a6, a7, a8, 0.01, BEZIER_MODE);
+		}
+		else if (strcmp(line, "ident") == 0){
+			ident(transform);
+		}
+		else if (strcmp(line, "scale") == 0){
+			fgets(line, 255, f);
+      line[strlen(line)]='\0';
+			sscanf(line, "%lf" "%lf" "%lf", &a1, &a2, &a3);
+			matrix_mult(make_scale(a1, a2, a3), transform);
+		}
+		else if (strcmp(line, "translate") == 0){
+			fgets(line, 255, f);
+      line[strlen(line)]='\0';
+			sscanf(line, "%lf" "%lf" "%lf", &a1, &a2, &a3);
+			matrix_mult(make_translate(a1, a2, a3), transform);
+		}
+		else if (strcmp(line, "xrotate") == 0){
+			fgets(line, 255, f);
+      line[strlen(line)]='\0';
+			sscanf(line, "%lf", &a1);
+			matrix_mult(make_rotX(a1 * M_PI / 180), transform);
+		}
+		else if (strcmp(line, "yrotate") == 0){
+			fgets(line, 255, f);
+      line[strlen(line)]='\0';
+			sscanf(line, "%lf", &a1);
+			matrix_mult(make_rotY(a1 * M_PI / 180), transform);
+		}
+		else if (strcmp(line, "zrotate") == 0){
+    	fgets(line, 255, f);
+      line[strlen(line)]='\0';
+			sscanf(line, "%lf", &a1);
+			matrix_mult(make_rotZ(a1 * M_PI / 180), transform);
+		}
+		else if (strcmp(line, "apply") == 0){
+			matrix_mult(transform, pm);
+		}
+		else if (strcmp(line, "display") == 0){
+			clear_screen(s);
+			draw_lines(pm, s, c);
+			display(s);
+		}
+		else if (strcmp(line, "save") == 0){
+			clear_screen(s);
+			draw_lines(pm, s, c);
+			fgets(line, 255, f);
+			line[strlen(line)]='\0';
+			save_extension(s, line);
+		}
+		else 
+			printf("Not a valid command. >:(\n");
+	}
 }
 
   
-/*------------------------------ count_tokens ------------------------------*/
 
-/*
-  Counts the number of tokens in a string
-  Params:
-  char *line - input string
-  char dlimit - delimiter
-  Returns:
-  number of tokens
-*/
-
-int count_tokens( char *line, char dlimit ){
-  char *token = line;
-  int n = 0;
-  while( token ){
-    token = strchr(token, dlimit);
-    if( token ){
-      token++;
-      while (*token == dlimit)
-	token++;
-    }
-    n++;
-  }
-  return n;
-}
-
-/*------------------------------ parse_line ------------------------------*/
-
-/*
-  Separates the tokens in a string and returns an array of tokens
-  Params:
-  char *line - input string
-  char dlimit - delimiter
-  Returns:
-  array of tokens
-*/
-
-char** parse_line( char *line, char dlimit ){
-  int size = count_tokens(line,dlimit);
-  int i = 0;
-  char** tokens = (char**)malloc(sizeof(char*)*size+1);
-  char sdlimit[2] = {dlimit, '\0'};
-  char* tmp;
-	
-  while (i < size){
-    tmp = strsep(&line, sdlimit);
-    if (*tmp){
-      tmp = trim(tmp);
-      tokens[i] = tmp;
-      i++;
-    }
-  }
-  tokens[size] = NULL;
-  return tokens;
-}
-
-/*------------------------------ trim ------------------------------*/
-
-/*
-  trims leading and trailing whitespace
-  Params:
-  char *line - input string
-  Returns:
-  pointer to the beginning of the trimmed string
-*/
-
-char* trim( char *line ){
-  int i = 0;
-  int len;
-  while( *(line+i) == ' '){
-    i++;
-  }
-  line = line+i;
-  len = strlen(line);
-  i = len-1;
-  while( line[i] == ' ' || line[i] == '\n' ){
-    i--;
-  }
-  if (i < len - 1 &&
-      (line[i+1] == ' ' ||
-       line[i+1] == '\n'))
-    line[i+1] = '\0';
-  return line;
-}
 

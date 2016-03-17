@@ -14,10 +14,6 @@ void add_edge( struct matrix * points,
 void draw_lines( struct matrix * points, screen s, color c);
 
 //advanced shapes
-double circle_x(double cx, double r, double t);
-double circle_y(double cy, double r, double t);
-double curve(double a, double b, double c, double d, double t);
-
 void add_circle( struct matrix * points, 
 								 double cx, double cy, 
 								 double r, double step );

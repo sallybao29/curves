@@ -7,20 +7,13 @@
 #include "draw.h"
 #include "matrix.h"
 
-double circle_x(double cx, double r, double t){
-  return r * cos(2 * M_PI * t) + cx;
-}
-
-double circle_y(double cy, double r, double t){
-  return r * sin(2 * M_PI * t) + cy;
-}
 
 /*======== void add_circle() ==========
   Inputs:   struct matrix * points
-            double cx
-	    double cy
-	    double y
-	    double step  
+	double cx
+	double cy
+	double y
+	double step  
   Returns: 
 
 
@@ -28,25 +21,22 @@ double circle_y(double cy, double r, double t){
   jdyrlandweaver
   ====================*/
 void add_circle( struct matrix * points, 
-		 double cx, double cy, 
-		 double r, double step ) {
+								 double cx, double cy, 
+								 double r, double step ) {
 
   double x0, y0, x, y, t;
 
-  x0 = circle_x(cx, r, 0);
-  y0 = circle_y(cy, r, 0);
-  for (t = 0; t < 1.0000001; t+= step){
-    x = circle_x(cx, r, t);
-    y = circle_y(cy, r, t);
-    add_edge(points, x0, y0, 0, x, y, 0);
+  x0 = r + cx;
+  y0 = cy;
+  for (t = step; t < 1.0000001; t+= step){
+    x = r * cos(2 * M_PI * t) + cx;
+		y = r * sin(2 * M_PI * t) + cy;
+		add_edge(points, x0, y0, 0, x, y, 0);
     x0 = x;
     y0 = y;
   }
 }
 
-double curve(double a, double b, double c, double d, double t){
-	return t * (t * (a * t + b) + c) + d; 
-}
 
 /*======== void add_curve() ==========
 	Inputs:   struct matrix *points
@@ -92,15 +82,16 @@ void add_curve( struct matrix *points,
 		return;
 	}
 
-	h0 = curve(coefs_x -> m[0][0], coefs_x -> m[1][0],
-						 coefs_x -> m[2][0], coefs_x -> m[3][0], 0);
-	v0 = curve(coefs_y -> m[0][0], coefs_y -> m[1][0],
-						 coefs_y -> m[2][0], coefs_y -> m[3][0], 0);
-	for (t = 0; t < 1.0000001; t+= step){
-		h = curve(coefs_x -> m[0][0], coefs_x -> m[1][0],
-							coefs_x -> m[2][0], coefs_x -> m[3][0], t);
-		v = curve(coefs_y -> m[0][0], coefs_y -> m[1][0],
-							coefs_y -> m[2][0], coefs_y -> m[3][0], t);
+	h0 = coefs_x -> m[3][0];
+	v0 = coefs_y -> m[3][0];
+	for (t = step; t < 1.0000001; t+= step){
+		h = t * (t * (coefs_x -> m[0][0] * t +
+									coefs_x -> m[1][0]) +
+						 coefs_x -> m[2][0]) + coefs_x -> m[3][0];
+		v = t * (t * (coefs_y -> m[0][0] * t +
+									coefs_y -> m[1][0]) +
+						 coefs_y -> m[2][0]) + coefs_y -> m[3][0]; 
+	
 		add_edge(points, h0, v0, 0, h, v, 0);
 		h0 = h;
 		v0 = v;
@@ -108,14 +99,14 @@ void add_curve( struct matrix *points,
 }
 
 /*======== void add_point() ==========
-		Inputs:   struct matrix * points
-		int x
-		int y
-		int z 
-		Returns: 
-		adds point (x, y, z) to points and increment points.lastcol
-		if points is full, should call grow on points
-		====================*/
+	Inputs:   struct matrix * points
+	int x
+	int y
+	int z 
+	Returns: 
+	adds point (x, y, z) to points and increment points.lastcol
+	if points is full, should call grow on points
+	====================*/
 void add_point( struct matrix * points, double x, double y, double z) {
   
 	if ( points->lastcol == points->cols )
