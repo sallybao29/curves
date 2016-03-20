@@ -43,27 +43,28 @@ The file follows the following format:
 	 yrotate: create an y-axis rotation matrix,
 	    then multiply the transform matrix by the rotation matrix -
 	    takes 1 argument (theta)
-	 zrotate: create an z-axis rotation matrix,
-	    then multiply the transform matrix by the rotation matrix -
-	    takes 1 argument (theta)
-	 apply: apply the current transformation matrix to the 
-	    edge matrix
-	 display: draw the lines of the edge matrix to the screen
-	    display the screen
-	 save: draw the lines of the edge matrix to the screen
-	    save the screen to a file -
-	    takes 1 argument (file name)
-	 quit: end parsing
+			zrotate: create an z-axis rotation matrix,
+			then multiply the transform matrix by the rotation matrix -
+			takes 1 argument (theta)
+			apply: apply the current transformation matrix to the 
+			edge matrix
+			display: draw the lines of the edge matrix to the screen
+			display the screen
+			save: draw the lines of the edge matrix to the screen
+			save the screen to a file -
+			takes 1 argument (file name)
+			clear screen: clear the screen of all lines
+			quit: end parsing
 
-See the file script for an example of the file format
+			See the file script for an example of the file format
 
 
-IMPORTANT MATH NOTE:
-the trig functions int math.h use radian mesure, but us normal
-humans use degrees, so the file will contain degrees for rotations,
-be sure to conver those degrees to radians (M_PI is the constant
-for PI)
-====================*/
+			IMPORTANT MATH NOTE:
+			the trig functions int math.h use radian mesure, but us normal
+			humans use degrees, so the file will contain degrees for rotations,
+			be sure to conver those degrees to radians (M_PI is the constant
+			for PI)
+			====================*/
 void parse_file ( char * filename, 
                   struct matrix * transform, 
                   struct matrix * pm,
@@ -149,19 +150,28 @@ void parse_file ( char * filename,
 			sscanf(line, "%lf", &a1);
 			matrix_mult(make_rotZ(a1 * M_PI / 180), transform);
 		}
+		else if (strcmp(line, "color") == 0){
+    	fgets(line, 255, f);
+      line[strlen(line)]='\0';
+			sscanf(line, "%lf" "%lf" "%lf", &a1, &a2, &a3);
+			c.red = a1;
+			c.green = a2;
+			c.blue = a3;
+		}
 		else if (strcmp(line, "apply") == 0){
 			matrix_mult(transform, pm);
 		}
+		else if (strcmp(line, "clear points") == 0){
+			pm -> lastcol = 0;
+		}
 		else if (strcmp(line, "display") == 0){
-			clear_screen(s);
 			draw_lines(pm, s, c);
 			display(s);
 		}
 		else if (strcmp(line, "save") == 0){
-			clear_screen(s);
 			draw_lines(pm, s, c);
 			fgets(line, 255, f);
-			line[strlen(line)]='\0';
+			line[strlen(line) - 1]='\0';
 			save_extension(s, line);
 		}
 		else 
